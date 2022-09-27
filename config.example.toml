@@ -1,0 +1,8 @@
+HTTPPort = 8080
+Theme = "default" # 主题
+
+[yuque]
+BaseURL = "https://www.yuque.com/api/v2"
+Token = ""
+UserAgent = "golangtips.com"
+Namespace = "" # 默认

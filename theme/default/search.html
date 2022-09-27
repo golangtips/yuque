@@ -1,0 +1,26 @@
+{{ define "search" }}
+{{ template "header" . }}
+
+<body id="page">
+	{{ template "site-header" . }}
+	<div class="content-body">
+		<div class="container">
+			<div class="row">
+				<main class="col-md-12">
+					<h1 class="page-title">404</h1>
+					<article class="post">
+						<div class="entry-content clearfix">
+							此功能，正在开发!!!
+						</div>
+					</article>
+				</main>
+			</div>
+		</div>
+	</div>
+
+	{{ template "site-footer" . }}
+	{{ template "mobile-menu" . }}
+	<script src="/static/js/script.js"></script>
+</body>
+{{ template "footer" . }}
+{{ end }}
