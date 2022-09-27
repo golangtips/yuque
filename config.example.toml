@@ -1,8 +1,14 @@
 HTTPPort = 8080
 Theme = "default" # 主题
 
+[site]
+Title = "Golang小贴士" # 网站名称
+Copyright = """
+&copy 2022 <a href="https://golangtips.com/" title="Golang小贴士" target="_blank">Golang小贴士</a>
+"""
+
 [yuque]
-BaseURL = "https://www.yuque.com/api/v2"
+BaseURL = "https://golangtips.yuque.com/api/v2"
 Token = ""
 UserAgent = "golangtips.com"
 Namespace = "" # 默认

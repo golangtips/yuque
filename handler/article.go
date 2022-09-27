@@ -67,6 +67,7 @@ func HomePage(t *template.Template, s service.IArticle, c config.Toml) http.Hand
 			"articles":  articles.Data,
 			"paginator": p,
 			"site":      c.Site,
+			"pageSize":  intPageSize,
 		})
 		if err != nil {
 			log.Println(err.Error())
