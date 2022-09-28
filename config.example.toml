@@ -1,4 +1,4 @@
-HTTPPort = 8080
+HTTPPort = 80
 Theme = "default" # 主题
 
 [site]
@@ -8,7 +8,7 @@ Copyright = """
 """
 
 [yuque]
-BaseURL = "https://golangtips.yuque.com/api/v2"
+BaseURL = "https://www.yuque.com/api/v2"
 Token = ""
 UserAgent = "golangtips.com"
-Namespace = "" # 默认
+Namespace = "hopher/golangtips" # 默认
