@@ -24,8 +24,9 @@ type YuQue struct {
 
 func NewYuQue(baseURL, token, userAgent, namespace string) *YuQue {
 
+	// GetRepoDocList 请求会比较久，适当增加超时时长
 	client := &http.Client{
-		Timeout: 10 * time.Second,
+		Timeout: 30 * time.Second,
 	}
 
 	return &YuQue{
