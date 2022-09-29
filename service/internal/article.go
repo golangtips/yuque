@@ -4,24 +4,36 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
+	"unicode/utf8"
+
+	"github.com/wangbin/jiebago"
 
 	"github.com/PuerkitoBio/goquery"
 
 	sdk "github.com/golangtips/yuque/sdk/intf"
 
+	mapset "github.com/deckarep/golang-set/v2"
 	"github.com/golangtips/yuque/service/intf"
 )
 
-var _ intf.IArticle = (*Article)(nil)
+var (
+	_ intf.IArticle = (*Article)(nil)
+
+	// allIndex 文章索引, key = 搜索词, v = [文章Slug]
+	allIndex = make(map[string]mapset.Set[string])
+)
 
 type Article struct {
-	YQ sdk.IYuQue
+	YQ    sdk.IYuQue
+	Jieba *jiebago.Segmenter
 }
 
-func NewArticle(yq sdk.IYuQue) (*Article, error) {
+func NewArticle(yq sdk.IYuQue, jieba *jiebago.Segmenter) (*Article, error) {
 	return &Article{
-		YQ: yq,
+		YQ:    yq,
+		Jieba: jieba,
 	}, nil
 }
 
@@ -49,6 +61,8 @@ func (s *Article) GetList(ctx context.Context, request *intf.GetListRequest) (*i
 			Author:        item.LastEditor.Name,
 		})
 	}
+
+	//fmt.Println(articles)
 
 	return &intf.GetListResponse{
 		Data: articles,
@@ -101,13 +115,58 @@ func (s *Article) GetTotal(ctx context.Context) (int, error) {
 	return len(all.Data), nil
 }
 
+func (s *Article) PutIndex(ctx context.Context, article *intf.Article) error {
+
+	words := s.Jieba.Cut(TrimHtml(article.Title+article.Desc), true)
+	//for _, word := range words {
+	for word := range words {
+		// 过滤2个字符以下 or 去掉标点符号
+		if utf8.RuneCountInString(word) < 2 || regexp.MustCompile(`^\s|。|，|;|；|,|-|、|:|：|\.|\?|？|\(|\)|《|》|"|'$`).MatchString(word) {
+			continue
+		}
+
+		if _, has := allIndex[word]; has {
+			allIndex[word].Add(article.Slug)
+		} else {
+			set := mapset.NewSet[string]()
+			set.Add(article.Slug)
+			allIndex[word] = set
+		}
+	}
+
+	return nil
+}
+
+func (s *Article) GetIndex(ctx context.Context) map[string]mapset.Set[string] {
+	// ..
+	return allIndex
+}
+
+func (s *Article) Cut(ctx context.Context, text string) ([]string, error) {
+	log.Println("Cut")
+	// ...
+	words := s.Jieba.Cut(text, true)
+
+	var results []string
+	for word := range words {
+		// 过滤2个字符以下 or 去掉标点符号
+		if utf8.RuneCountInString(word) < 2 || regexp.MustCompile(`^\s|。|，|;|；|,|-|、|:|：|\.|\?|？|\(|\)|《|》|"|'$`).MatchString(word) {
+			continue
+		}
+
+		word = strings.ToLower(word)
+		results = append(results, word)
+	}
+
+	return results, nil
+}
+
 // getTocList 获取目录列表
 func (s *Article) getToc(ctx context.Context, content string) []intf.H {
 
 	var tocList []intf.H
 	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(content))
 	doc.Find("h1, h2, h3, h4, h5").Each(func(i int, s *goquery.Selection) {
-
 		// 提取 ID
 		id, _ := s.Attr("id")
 		id = strings.ReplaceAll(id, "\\", "")
@@ -146,4 +205,24 @@ func (s *Article) getToc(ctx context.Context, content string) []intf.H {
 	})
 
 	return tocList
+}
+
+// TrimHtml 去掉字符串中的html标签
+func TrimHtml(src string) string {
+	//将HTML标签全转换成小写
+	re, _ := regexp.Compile("\\<[\\S\\s]+?\\>")
+	src = re.ReplaceAllStringFunc(src, strings.ToLower)
+	//去除STYLE
+	re, _ = regexp.Compile("\\<style[\\S\\s]+?\\</style\\>")
+	src = re.ReplaceAllString(src, "")
+	//去除SCRIPT
+	re, _ = regexp.Compile("\\<script[\\S\\s]+?\\</script\\>")
+	src = re.ReplaceAllString(src, "")
+	//去除所有尖括号内的HTML代码，并换成换行符
+	re, _ = regexp.Compile("\\<[\\S\\s]+?\\>")
+	src = re.ReplaceAllString(src, "\n")
+	//去除连续的换行符
+	re, _ = regexp.Compile("\\s{2,}")
+	src = re.ReplaceAllString(src, "\n")
+	return strings.TrimSpace(src)
 }

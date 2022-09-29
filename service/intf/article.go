@@ -3,6 +3,8 @@ package intf
 import (
 	"context"
 	"time"
+
+	mapset "github.com/deckarep/golang-set/v2"
 )
 
 // IArticle 文章接口
@@ -13,6 +15,12 @@ type IArticle interface {
 	GetDetail(ctx context.Context, request *GetDetailRequest) (*GetDetailResponse, error)
 	// GetTotal 文章总数
 	GetTotal(ctx context.Context) (int, error)
+	// PutIndex 新增索引
+	PutIndex(ctx context.Context, article *Article) error
+	// GetIndex 获取索引
+	GetIndex(ctx context.Context) map[string]mapset.Set[string]
+	// Cut 分词
+	Cut(ctx context.Context, text string) (words []string, err error)
 }
 
 type GetListRequest struct {
@@ -45,6 +53,7 @@ type Article struct {
 	UpdatedAt     time.Time
 }
 
+// H Toc 目录
 type H struct {
 	ID    string
 	Title string

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,15 +14,26 @@ import (
 	"github.com/golangtips/yuque/config"
 	"github.com/golangtips/yuque/sdk"
 	"github.com/golangtips/yuque/service"
+	"github.com/golangtips/yuque/service/intf"
 	"github.com/golangtips/yuque/transport"
 	"github.com/golangtips/yuque/util/template"
+	"github.com/wangbin/jiebago"
 )
+
+var seg jiebago.Segmenter
 
 func main() {
 	err := run()
 	if err != nil {
 		log.Fatal(err)
 	}
+}
+
+func print(ch <-chan string) {
+	for word := range ch {
+		fmt.Printf(" %s /", word)
+	}
+	fmt.Println()
 }
 
 func run() error {
@@ -39,10 +51,24 @@ func run() error {
 		yq = sdk.NewYuQue(c.BaseURL, c.Token, c.UserAgent, c.Namespace)
 	}
 
+	// 初始结巴分词
+	seg.LoadDictionary("dict.txt")
+
 	// 初始化服务
-	s, err := service.NewSet(yq)
+	s, err := service.NewSet(yq, &seg)
 	if err != nil {
 		return err
+	}
+
+	// ...
+	articles, err := s.Article.GetList(context.TODO(), &intf.GetListRequest{})
+	if err != nil {
+		return err
+	}
+
+	// 构建文章索引
+	for _, article := range articles.Data {
+		s.Article.PutIndex(context.TODO(), &article)
 	}
 
 	// 加载主题模板文件

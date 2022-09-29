@@ -5,17 +5,18 @@ import (
 	"github.com/golangtips/yuque/service/cache"
 	"github.com/golangtips/yuque/service/internal"
 	"github.com/golangtips/yuque/service/intf"
+	"github.com/wangbin/jiebago"
 )
 
 type Set struct {
 	Article intf.IArticle
 }
 
-func NewSet(yq sdk.IYuQue) (set *Set, err error) {
+func NewSet(yq sdk.IYuQue, jieba *jiebago.Segmenter) (set *Set, err error) {
 
 	var article intf.IArticle
 	{
-		article, err = internal.NewArticle(yq)
+		article, err = internal.NewArticle(yq, jieba)
 		if err != nil {
 			return nil, err
 		}

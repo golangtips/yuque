@@ -1,12 +1,15 @@
 package handler
 
 import (
+	"fmt"
 	"html/template"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+
+	mapset "github.com/deckarep/golang-set/v2"
 
 	"github.com/golangtips/yuque/config"
 
@@ -103,10 +106,39 @@ func Search(t *template.Template, s service.IArticle, c config.Toml) http.Handle
 		query := r.URL.Query()
 		q := query.Get("q")
 
+		allIndex := s.GetIndex(r.Context())
+
+		// 搜索词拆分
+		words, _ := s.Cut(r.Context(), q)
+
+		// 匹配到的文章集合
+		slugs := mapset.NewSet[string]()
+		for _, word := range words {
+			doc, exist := allIndex[word]
+			if !exist {
+				continue
+			}
+			slugs = slugs.Union(doc)
+		}
+
+		fmt.Println(slugs.ToSlice())
+
+		var articles []*service.Article
+
+		for _, slug := range slugs.ToSlice() {
+			article, _ := s.GetDetail(r.Context(), &service.GetDetailRequest{
+				Slug: slug,
+			})
+			articles = append(articles, &article.Data)
+		}
+
+		fmt.Println(articles)
+
 		err := t.ExecuteTemplate(w, "search", map[string]interface{}{
-			"articles": q,
+			"articles": articles,
 			"site":     c.Site,
 		})
+
 		if err != nil {
 			log.Println(err.Error())
 		}

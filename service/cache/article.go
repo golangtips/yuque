@@ -41,6 +41,7 @@ func (s *Article) GetList(ctx context.Context, request *intf.GetListRequest) (*i
 		return nil, err
 	}
 
+	//fmt.Println("cache === ", value)
 	s.cache.Set(key, value, cache.DefaultExpiration)
 
 	return value, nil
