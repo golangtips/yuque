@@ -1,4 +1,4 @@
-package intf
+package service
 
 import (
 	"context"
@@ -21,6 +21,8 @@ type IArticle interface {
 	GetIndex(ctx context.Context) map[string]mapset.Set[string]
 	// Cut 分词
 	Cut(ctx context.Context, text string) (words []string, err error)
+	// BuildAllIndex 构建所有文章索引
+	BuildAllIndex(ctx context.Context) error
 }
 
 type GetListRequest struct {

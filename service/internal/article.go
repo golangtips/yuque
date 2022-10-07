@@ -8,6 +8,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/golangtips/yuque/service"
+
 	"github.com/wangbin/jiebago"
 
 	"github.com/PuerkitoBio/goquery"
@@ -15,11 +17,10 @@ import (
 	sdk "github.com/golangtips/yuque/sdk/intf"
 
 	mapset "github.com/deckarep/golang-set/v2"
-	"github.com/golangtips/yuque/service/intf"
 )
 
 var (
-	_ intf.IArticle = (*Article)(nil)
+	_ service.IArticle = (*Article)(nil)
 
 	// allIndex 文章索引, key = 搜索词, v = [文章Slug]
 	allIndex = make(map[string]mapset.Set[string])
@@ -37,7 +38,7 @@ func NewArticle(yq sdk.IYuQue, jieba *jiebago.Segmenter) (*Article, error) {
 	}, nil
 }
 
-func (s *Article) GetList(ctx context.Context, request *intf.GetListRequest) (*intf.GetListResponse, error) {
+func (s *Article) GetList(ctx context.Context, request *service.GetListRequest) (*service.GetListResponse, error) {
 	log.Println("GetList")
 	response, err := s.YQ.GetRepoDocList(ctx, &sdk.GetRepoDocListRequest{
 		Offset: (request.Page - 1) * request.PageSize,
@@ -48,9 +49,9 @@ func (s *Article) GetList(ctx context.Context, request *intf.GetListRequest) (*i
 		return nil, fmt.Errorf("yq GetRepoDocList: %w", err)
 	}
 
-	var articles []intf.Article
+	var articles []service.Article
 	for _, item := range response.Data {
-		articles = append(articles, intf.Article{
+		articles = append(articles, service.Article{
 			Slug:          item.Slug,
 			Title:         item.Title,
 			Desc:          item.Description,
@@ -64,12 +65,12 @@ func (s *Article) GetList(ctx context.Context, request *intf.GetListRequest) (*i
 
 	//fmt.Println(articles)
 
-	return &intf.GetListResponse{
+	return &service.GetListResponse{
 		Data: articles,
 	}, nil
 }
 
-func (s *Article) GetDetail(ctx context.Context, request *intf.GetDetailRequest) (*intf.GetDetailResponse, error) {
+func (s *Article) GetDetail(ctx context.Context, request *service.GetDetailRequest) (*service.GetDetailResponse, error) {
 	log.Println("GetDetail")
 	response, err := s.YQ.GetRepoDocDetail(ctx, &sdk.GetRepoDocDetailRequest{
 		Slug: request.Slug,
@@ -89,8 +90,8 @@ func (s *Article) GetDetail(ctx context.Context, request *intf.GetDetailRequest)
 	// 文章目录
 	toc := s.getToc(ctx, content)
 
-	return &intf.GetDetailResponse{
-		Data: intf.Article{
+	return &service.GetDetailResponse{
+		Data: service.Article{
 			Slug:          detail.Slug,
 			Title:         detail.Title,
 			Content:       content,
@@ -115,7 +116,7 @@ func (s *Article) GetTotal(ctx context.Context) (int, error) {
 	return len(all.Data), nil
 }
 
-func (s *Article) PutIndex(ctx context.Context, article *intf.Article) error {
+func (s *Article) PutIndex(ctx context.Context, article *service.Article) error {
 
 	words := s.Jieba.Cut(TrimHtml(article.Title+article.Desc), true)
 	//for _, word := range words {
@@ -161,10 +162,27 @@ func (s *Article) Cut(ctx context.Context, text string) ([]string, error) {
 	return results, nil
 }
 
-// getTocList 获取目录列表
-func (s *Article) getToc(ctx context.Context, content string) []intf.H {
+func (s *Article) BuildAllIndex(ctx context.Context) error {
+	articles, err := s.GetList(ctx, &service.GetListRequest{})
+	if err != nil {
+		return err
+	}
 
-	var tocList []intf.H
+	// 构建文章索引
+	for _, article := range articles.Data {
+		err := s.PutIndex(context.TODO(), &article)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// getTocList 获取目录列表
+func (s *Article) getToc(ctx context.Context, content string) []service.H {
+
+	var tocList []service.H
 	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(content))
 	doc.Find("h1, h2, h3, h4, h5").Each(func(i int, s *goquery.Selection) {
 		// 提取 ID
@@ -197,7 +215,7 @@ func (s *Article) getToc(ctx context.Context, content string) []intf.H {
 			level = 5
 		}
 
-		tocList = append(tocList, intf.H{
+		tocList = append(tocList, service.H{
 			ID:    id,
 			Title: title,
 			Level: level,

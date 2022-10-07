@@ -7,19 +7,19 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/patrickmn/go-cache"
+	"github.com/golangtips/yuque/service"
 
-	"github.com/golangtips/yuque/service/intf"
+	"github.com/patrickmn/go-cache"
 )
 
-var _ intf.IArticle = (*Article)(nil)
+var _ service.IArticle = (*Article)(nil)
 
 type Article struct {
-	intf.IArticle
+	service.IArticle
 	cache *cache.Cache
 }
 
-func NewArticle(next intf.IArticle) *Article {
+func NewArticle(next service.IArticle) *Article {
 	// 默认5分钟缓存，每1小时清除过期项目
 	c := cache.New(30*time.Minute, 1*time.Hour)
 	return &Article{
@@ -28,11 +28,11 @@ func NewArticle(next intf.IArticle) *Article {
 	}
 }
 
-func (s *Article) GetList(ctx context.Context, request *intf.GetListRequest) (*intf.GetListResponse, error) {
+func (s *Article) GetList(ctx context.Context, request *service.GetListRequest) (*service.GetListResponse, error) {
 
 	key := s.buildCacheKey("GetList", request)
 	if value, ok := s.cache.Get(key); ok {
-		foo := value.(*intf.GetListResponse)
+		foo := value.(*service.GetListResponse)
 		return foo, nil
 	}
 
@@ -47,11 +47,11 @@ func (s *Article) GetList(ctx context.Context, request *intf.GetListRequest) (*i
 	return value, nil
 }
 
-func (s *Article) GetDetail(ctx context.Context, request *intf.GetDetailRequest) (*intf.GetDetailResponse, error) {
+func (s *Article) GetDetail(ctx context.Context, request *service.GetDetailRequest) (*service.GetDetailResponse, error) {
 
 	key := s.buildCacheKey("GetDetail", request)
 	if value, ok := s.cache.Get(key); ok {
-		foo := value.(*intf.GetDetailResponse)
+		foo := value.(*service.GetDetailResponse)
 		return foo, nil
 	}
 

@@ -2,7 +2,7 @@ FROM golang:1.18-alpine as builder
 
 # 环境变量设置
 ENV GO111MODULE on
-ENV CGO_ENABLED 1
+ENV CGO_ENABLED 0
 ENV GOOS linux
 ENV GOPROXY https://goproxy.cn,direct
 
@@ -14,7 +14,7 @@ WORKDIR /app
 # 整个源码复制到容器里面
 COPY . .
 
-RUN go build -mod=mod -o ./main -v ./cmd/main.go
+RUN go build -mod=mod -o ./main -v ./cmd/
 
 FROM alpine:3.13
 

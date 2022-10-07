@@ -1,4 +1,4 @@
-package template
+package xtemplate
 
 import (
 	"html/template"
