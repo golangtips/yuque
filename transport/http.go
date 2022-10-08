@@ -18,13 +18,20 @@ type Options struct {
 	Search        *Search
 	About         *About
 	CDNProxy      *CDNProxy
+	Config        *config.Toml
 }
 
 func NewHandler(o *Options) http.Handler {
 	r := mux.NewRouter()
 
 	// 静态文件
-	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	staticDir := fmt.Sprintf("theme/%s/static", o.Config.Theme)
+	r.PathPrefix("/static/").Handler(
+		http.StripPrefix(
+			"/static/",
+			http.FileServer(http.Dir(staticDir)),
+		),
+	)
 
 	// 首页
 	r.Methods("GET").Path("/").Handler(o.HomePage)

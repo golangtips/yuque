@@ -62,6 +62,7 @@ func injectApp() (*App, error) {
 		Search:        search,
 		About:         about,
 		CDNProxy:      cdnProxy,
+		Config:        toml,
 	}
 	handler := transport.NewHandler(options)
 	server := transport.NewHTTPServer(toml, handler)
