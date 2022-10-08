@@ -1,0 +1,12 @@
+{{ define "widget-tag-cloud" }}
+<div class="widget widget-tag-cloud">
+    <h3 class="widget-title">标签云</h3>
+    <ul>
+        {{ range $i, $tag := .site.Tags }}
+        <li>
+            <a href="#">{{ $tag }}</a>
+        </li>
+        {{ end }}
+    </ul>
+</div>
+{{ end }}

@@ -51,18 +51,6 @@ func (h *HomePage) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		PageSize: intPageSize,
 	})
 
-	// 最新文章
-	// TODO...
-
-	// 归档
-	// TODO...
-
-	// 分类
-	// TODO...
-
-	// 标签云
-	// TODO...
-
 	// RSS 订阅
 	// TODO...
 

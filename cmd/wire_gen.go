@@ -27,7 +27,7 @@ func injectApp() (*App, error) {
 	}
 	iYuQue := service.NewYuQue(toml)
 	segmenter := service.NewSegmenter()
-	iArticle, err := set.NewArticle(iYuQue, segmenter)
+	iArticle, err := set.NewArticle(iYuQue, segmenter, toml)
 	if err != nil {
 		return nil, err
 	}

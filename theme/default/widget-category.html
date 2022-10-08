@@ -1,0 +1,12 @@
+{{ define "widget-category" }}
+<div class="widget widget-category">
+    <h3 class="widget-title">分类</h3>
+    <ul>
+        {{ range $i, $category := .site.Categories }}
+        <li>
+            <a href="{{ $category.Link }}">{{ $category.Title }} <span class="post-count">({{ $category.Count }})</span></a>
+        </li>
+        {{ end }}
+    </ul>
+</div>
+{{ end }}

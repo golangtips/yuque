@@ -11,17 +11,7 @@
 					<h1 class="page-title">关于我</h1>
 					<article class="post">
 						<div class="entry-content clearfix">
-							<figure class="img-responsive-center">
-								<img class="img-responsive" width="200px" src="/static/img/me.jpg" alt="Developer Image">
-							</figure>
-							<p style="text-align: center;">某厂工程师</p>
-							<div class="height-40px"></div>
-							<h2 class="title text-center">社交</h2>
-							<ul>
-								<li><a href="https://github.com/golangtips">Github</a></li>
-								<li><a href="https://segmentfault.com/blog/golangtips">Segmentfault</a></li>
-								<li><a href="https://www.zhihu.com/people/golangtips">知乎</a></li>
-							</ul>
+							{{ .article.Content | unescapeHTML }}
 						</div>
 					</article>
 				</main>

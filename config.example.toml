@@ -7,8 +7,40 @@ Copyright = """
 &copy 2022 <a href="https://golangtips.com/" title="Golang小贴士" target="_blank">Golang小贴士</a>
 """
 
+# 功能性文章
+# about 关于我
+FeatureSlugs = ["about"]
+
+# 归档
+Archives = [
+    { title = "2017 年 5 月", link ="/2017" },
+    { title = "2018 年 5 月", link ="/2018" },
+    { title = "2019 年 5 月", link ="/2019" },
+]
+
+# 分类
+Categories = [
+    { title = "golang", link ="/category/golang", count = 3 },
+    { title = "架构", link ="/category/architect", count = 6 },
+    { title = "react", link ="/category/react", count = 10 },
+]
+
+# 最新文章
+Newests = [
+    { title = "Golang 语雀内容系统(1)", link ="/articles/wagrza" },
+    { title = "Golang 语雀内容系统(2)", link ="/articles/iibyg4" },
+    { title = "Golang 语雀内容系统(3)", link ="/articles/brm1xa" },
+]
+
+# 标签云
+Tags = ["golang", "go-kit", "架构", "react", "vue"]
+
+# 评论开关
+CommentSwitch = false
+
+# 语雀
 [yuque]
 BaseURL = "https://www.yuque.com/api/v2"
 Token = ""
 UserAgent = "golangtips.com"
-Namespace = "hopher/golangtips" # 默认
+Namespace = "" # 默认

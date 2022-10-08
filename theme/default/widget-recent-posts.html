@@ -1,0 +1,12 @@
+{{ define "widget-recent-posts" }}
+<div class="widget widget-recent-posts">
+    <h3 class="widget-title">最新文章</h3>
+    <ul>
+        {{ range $i, $newest := .site.Newests }}
+        <li>
+            <a href="{{ $newest.Link }}">{{ $newest.Title }}</a>
+        </li>
+        {{ end }}
+    </ul>
+</div>
+{{ end }}

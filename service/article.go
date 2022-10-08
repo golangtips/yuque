@@ -23,6 +23,8 @@ type IArticle interface {
 	Cut(ctx context.Context, text string) (words []string, err error)
 	// BuildAllIndex 构建所有文章索引
 	BuildAllIndex(ctx context.Context) error
+	// GetToc 获取目录列表
+	GetToc(ctx context.Context, content string) []H
 }
 
 type GetListRequest struct {

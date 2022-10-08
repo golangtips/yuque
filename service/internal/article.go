@@ -8,6 +8,8 @@ import (
 	"strings"
 	"unicode/utf8"
 
+	"github.com/golangtips/yuque/config"
+
 	"github.com/golangtips/yuque/service"
 
 	"github.com/wangbin/jiebago"
@@ -27,14 +29,16 @@ var (
 )
 
 type Article struct {
-	YQ    sdk.IYuQue
-	Jieba *jiebago.Segmenter
+	YQ     sdk.IYuQue
+	Jieba  *jiebago.Segmenter
+	Config *config.Toml
 }
 
-func NewArticle(yq sdk.IYuQue, jieba *jiebago.Segmenter) (*Article, error) {
+func NewArticle(yq sdk.IYuQue, jieba *jiebago.Segmenter, config *config.Toml) (*Article, error) {
 	return &Article{
-		YQ:    yq,
-		Jieba: jieba,
+		YQ:     yq,
+		Jieba:  jieba,
+		Config: config,
 	}, nil
 }
 
@@ -50,16 +54,22 @@ func (s *Article) GetList(ctx context.Context, request *service.GetListRequest) 
 	}
 
 	var articles []service.Article
-	for _, item := range response.Data {
+	for _, article := range response.Data {
+
+		// 跳过功能性文章
+		if containString(s.Config.Site.FeatureSlugs, article.Slug) {
+			continue
+		}
+
 		articles = append(articles, service.Article{
-			Slug:          item.Slug,
-			Title:         item.Title,
-			Desc:          item.Description,
-			CommentsCount: item.CommentsCount,
-			Hits:          item.ReadCount,
-			CreatedAt:     item.CreatedAt,
-			UpdatedAt:     item.UpdatedAt,
-			Author:        item.LastEditor.Name,
+			Slug:          article.Slug,
+			Title:         article.Title,
+			Desc:          article.Description,
+			CommentsCount: article.CommentsCount,
+			Hits:          article.ReadCount,
+			CreatedAt:     article.CreatedAt,
+			UpdatedAt:     article.UpdatedAt,
+			Author:        article.LastEditor.Name,
 		})
 	}
 
@@ -88,7 +98,7 @@ func (s *Article) GetDetail(ctx context.Context, request *service.GetDetailReque
 	// 替换html中的cdn链接进行反向代理
 	content = strings.Replace(content, "https://cdn.nlark.com/", "/", -1)
 	// 文章目录
-	toc := s.getToc(ctx, content)
+	toc := s.GetToc(ctx, content)
 
 	return &service.GetDetailResponse{
 		Data: service.Article{
@@ -179,8 +189,8 @@ func (s *Article) BuildAllIndex(ctx context.Context) error {
 	return nil
 }
 
-// getTocList 获取目录列表
-func (s *Article) getToc(ctx context.Context, content string) []service.H {
+// GetToc 获取目录列表
+func (s *Article) GetToc(ctx context.Context, content string) []service.H {
 
 	var tocList []service.H
 	doc, _ := goquery.NewDocumentFromReader(strings.NewReader(content))
@@ -243,4 +253,13 @@ func TrimHtml(src string) string {
 	re, _ = regexp.Compile("\\s{2,}")
 	src = re.ReplaceAllString(src, "\n")
 	return strings.TrimSpace(src)
+}
+
+func containString(array []string, val string) bool {
+	for i := 0; i < len(array); i++ {
+		if array[i] == val {
+			return true
+		}
+	}
+	return false
 }

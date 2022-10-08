@@ -1,0 +1,12 @@
+{{ define "widget-archives" }}
+<div class="widget widget-archives">
+    <h3 class="widget-title">归档</h3>
+    <ul>
+        {{ range $i, $archive := .site.Archives }}
+        <li>
+            <a href="{{ $archive.Link }}">{{ $archive.Title }}</a>
+        </li>
+        {{ end }}
+    </ul>
+</div>
+{{ end }}

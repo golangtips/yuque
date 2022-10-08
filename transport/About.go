@@ -2,6 +2,7 @@ package transport
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 
 	"github.com/golangtips/yuque/config"
@@ -17,8 +18,17 @@ type About struct {
 }
 
 func (h *About) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	h.Template.ExecuteTemplate(w, "about", map[string]interface{}{
-		"content": "About",
+
+	detail, _ := h.Service.GetDetail(r.Context(), &service.GetDetailRequest{
+		Slug: "about",
+	})
+
+	err := h.Template.ExecuteTemplate(w, "about", map[string]interface{}{
+		"article": detail.Data,
 		"site":    h.Config.Site,
 	})
+	
+	if err != nil {
+		log.Println(err.Error())
+	}
 }
