@@ -1,10 +1,12 @@
 package transport
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
+
+	"github.com/golangtips/yuque/util"
 
 	mapset "github.com/deckarep/golang-set/v2"
 
@@ -21,8 +23,22 @@ type Search struct {
 }
 
 func (h *Search) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
 	// 分页参数
 	query := r.URL.Query()
+	page := query.Get("page")
+	pageSize := query.Get("pageSize")
+
+	intPage, _ := strconv.Atoi(page)
+	intPageSize, _ := strconv.Atoi(pageSize)
+	if intPage < 1 {
+		intPage = 1
+	}
+	if intPageSize < 1 {
+		intPageSize = 10
+	}
+
+	// 查询参数
 	q := query.Get("q")
 
 	allIndex := h.Service.GetIndex(r.Context())
@@ -40,7 +56,9 @@ func (h *Search) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		slugs = slugs.Union(doc)
 	}
 
-	fmt.Println(slugs.ToSlice())
+	// 分页处理
+	p := util.NewPagination(len(slugs.ToSlice()), intPageSize, intPage, 10)
+	p.Paginate()
 
 	var articles []*service.Article
 
@@ -51,11 +69,12 @@ func (h *Search) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		articles = append(articles, &article.Data)
 	}
 
-	fmt.Println(articles)
+	//fmt.Println(articles)
 
 	err := h.Template.ExecuteTemplate(w, "search", map[string]interface{}{
-		"articles": articles,
-		"site":     h.Config.Site,
+		"articles":  articles,
+		"site":      h.Config.Site,
+		"paginator": p,
 	})
 
 	if err != nil {

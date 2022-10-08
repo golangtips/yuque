@@ -1,0 +1,48 @@
+{{ define "pagination" }}
+<div class="pagination">
+    <ul class="pagination-list">
+        {{if .paginator.HasPrev}}
+        <li>
+            <a class="pagination-link" href="?page={{.paginator.FirstPage}}&pageSize={{ $.pageSize }}"> First </a>
+        </li>
+        <li>
+            <a class="pagination-link" rel="prev" href="?page={{.paginator.Prev}}&pageSize={{ $.pageSize }}"> Prev </a>
+        </li>
+        <li>
+            <a class="pagination-link" href="?page={{.paginator.FirstPage}}&pageSize={{ $.pageSize }}">{{.paginator.FirstPage}}</a>
+        </li>
+        <li>
+            <span class="pagination-ellipsis">&hellip;</span>
+        </li>
+        {{end}}
+        {{$currentPage := .paginator.CurrentPage}}
+        {{range $i := .paginator.Pages}}
+        {{if eq $i $currentPage}}
+        <li>
+            <a class="pagination-link current">{{$i}}</a>
+        </li>
+        {{else}}
+        <li>
+            <a class="pagination-link" href="?page={{$i}}&pageSize={{ $.pageSize }}">{{$i}}</a>
+        </li>
+        {{end}}
+        {{end}}
+        {{if not .paginator.NearLast}}
+        <li>
+            <span class="pagination-ellipsis">&hellip;</span>
+        </li>
+        <li>
+            <a class="pagination-link" href="?page={{.paginator.TotalPages}}&pageSize={{ $.pageSize }}">{{.paginator.TotalPages}}</a>
+        </li>
+        {{end}}
+        {{if .paginator.HasNext}}
+        <li>
+            <a class="pagination-link" rel="next" href="?page={{.paginator.Next}}&pageSize={{ $.pageSize }}"> Next </a>
+        </li>
+        <li>
+            <a class="pagination-link" href="?&page={{.paginator.TotalPages}}&pageSize={{ $.pageSize }}"> Last </a>
+        </li>
+        {{end}}
+    </ul>
+</div>
+{{ end }}
